@@ -4,6 +4,7 @@ import {Controller, useForm} from "react-hook-form";
 import {Button, CircularProgress, Container, Paper, TextField} from "@mui/material";
 import {useMutation} from "react-query";
 import {apiRoute} from "../../utils";
+import {useNavigate} from 'react-router-dom';
 
 interface PostEditorProps {
     post: Partial<Post>;
@@ -28,6 +29,7 @@ function PostEditor(props: PostEditorProps) {
         defaultValues,
         mode: "onChange"
     });
+    const navigate = useNavigate();
 
     const {
         mutate: create,
@@ -36,10 +38,18 @@ function PostEditor(props: PostEditorProps) {
         method: props.id ? 'PUT' : 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(post)
-    }));
+    }), {
+        onSuccess: () => {
+            if (!props.id) {
+                navigate('/home')
+            }
+        }
+    });
     const {mutate: deletePost, isLoading: isDeleting} = useMutation(() => fetch(`${apiRoute}/${props.id}`, {
         method: 'DELETE'
-    }));
+    }), {
+        onSuccess: () => navigate('/home')
+    });
 
     const onValidSaveSubmit = (data: Partial<Post>) => {
         create(data);
